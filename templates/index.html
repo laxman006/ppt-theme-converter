@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT Theme Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #0027AB;
+            --primary-light: #1a3fc4;
+            --primary-dark: #001b7a;
+            --accent: #4f6df5;
+            --bg: #f0f2f8;
+            --card: #ffffff;
+            --text: #1a1a2e;
+            --text-muted: #6b7280;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #e2e5f1;
+            --shadow: 0 4px 24px rgba(0, 39, 171, 0.08);
+            --shadow-lg: 0 12px 48px rgba(0, 39, 171, 0.12);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 2rem 0;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            position: relative;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            margin-top: 0.4rem;
+            font-weight: 300;
+            position: relative;
+        }
+
+        .container {
+            max-width: 640px;
+            width: 100%;
+            padding: 2rem 1.5rem;
+            flex: 1;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 2.5rem 2rem;
+            margin-bottom: 1.5rem;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover { box-shadow: var(--shadow-lg); }
+
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: #fafbff;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(79, 109, 245, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .drop-zone.has-file {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.04);
+        }
+
+        .drop-zone-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drop-zone-icon svg { width: 28px; height: 28px; fill: none; stroke: white; stroke-width: 2; }
+
+        .drop-zone h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text);
+        }
+
+        .drop-zone p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .file-info {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.8rem 1rem;
+            background: #f7f8fc;
+            border-radius: 10px;
+            margin-top: 1.25rem;
+        }
+
+        .file-info.visible { display: flex; }
+
+        .file-info-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ff6b35, #ff8f5e);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .file-info-icon svg { width: 20px; height: 20px; fill: white; }
+
+        .file-info-details { flex: 1; min-width: 0; }
+        .file-info-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-info-size { font-size: 0.75rem; color: var(--text-muted); }
+
+        .file-info-remove {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .file-info-remove:hover { background: #fee; color: var(--error); }
+
+        .btn {
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.25rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 39, 171, 0.3);
+        }
+
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #34d399);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 1.25rem;
+        }
+
+        .progress-container.visible { display: block; }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .status {
+            display: none;
+            margin-top: 1.25rem;
+            padding: 0.85rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status.visible { display: flex; }
+        .status.error { background: #fef2f2; color: var(--error); border: 1px solid #fecaca; }
+        .status.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+
+        .theme-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .theme-item {
+            padding: 1rem;
+            border-radius: 10px;
+            background: #f7f8fc;
+        }
+
+        .theme-item-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+
+        .theme-item-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .color-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .footer a { color: var(--primary); text-decoration: none; }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 1.25rem 1rem; }
+            .card { padding: 1.5rem 1.25rem; }
+            .drop-zone { padding: 2rem 1.25rem; }
+            .theme-preview { grid-template-columns: 1fr; }
+        }
+
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>PPT Theme Converter</h1>
+        <p>Transform presentations to your company brand in seconds</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="section-title">Upload Presentation</div>
+
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-icon">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                </div>
+                <h3>Drop your PowerPoint file here</h3>
+                <p>or click to browse &middot; .pptx up to 50MB</p>
+            </div>
+
+            <input type="file" id="fileInput" accept=".ppt,.pptx">
+
+            <div class="file-info" id="fileInfo">
+                <div class="file-info-icon">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                </div>
+                <div class="file-info-details">
+                    <div class="file-info-name" id="fileName"></div>
+                    <div class="file-info-size" id="fileSize"></div>
+                </div>
+                <button class="file-info-remove" id="removeFile" title="Remove file">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <button class="btn btn-primary" id="convertBtn" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                Apply Company Theme
+            </button>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+                <div class="progress-text" id="progressText">Uploading...</div>
+            </div>
+
+            <div class="status" id="statusMsg"></div>
+
+            <button class="btn btn-success" id="downloadBtn" style="display:none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Themed Presentation
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Theme Settings</div>
+            <div class="theme-preview">
+                <div class="theme-item">
+                    <div class="theme-item-label">Font</div>
+                    <div class="theme-item-value">Poppins</div>
+                </div>
+                <div class="theme-item">
+                    <div class="theme-item-label">Title Slides</div>
+                    <div class="theme-item-value"><span class="color-dot" style="background:#0027AB"></span>44pt Bold</div>
+                </div>
+                <div class="theme-item">
+                    <div class="theme-item-label">Headings</div>
+                    <div class="theme-item-value"><span class="color-dot" style="background:#0027AB"></span>32pt Bold</div>
+                </div>
+                <div class="theme-item">
+                    <div class="theme-item-label">Body Text</div>
+                    <div class="theme-item-value"><span class="color-dot" style="background:#000"></span>24pt Normal</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Files are deleted immediately after download for your security.
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFile = document.getElementById('removeFile');
+        const convertBtn = document.getElementById('convertBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const statusMsg = document.getElementById('statusMsg');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let selectedFile = null;
+        let downloadUrl = null;
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function showStatus(message, type) {
+            statusMsg.textContent = message;
+            statusMsg.className = 'status visible ' + type;
+        }
+
+        function hideStatus() {
+            statusMsg.className = 'status';
+        }
+
+        function reset() {
+            selectedFile = null;
+            if (downloadUrl) {
+                URL.revokeObjectURL(downloadUrl);
+                downloadUrl = null;
+            }
+            fileInput.value = '';
+            fileInfo.classList.remove('visible');
+            dropZone.classList.remove('has-file');
+            convertBtn.disabled = true;
+            progressContainer.classList.remove('visible');
+            downloadBtn.style.display = 'none';
+            hideStatus();
+        }
+
+        function handleFile(file) {
+            hideStatus();
+            downloadBtn.style.display = 'none';
+            progressContainer.classList.remove('visible');
+
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['ppt', 'pptx'].includes(ext)) {
+                showStatus('Invalid file type. Please upload a .pptx file.', 'error');
+                return;
+            }
+            if (file.size > 50 * 1024 * 1024) {
+                showStatus('File too large. Maximum size is 50MB.', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatSize(file.size);
+            fileInfo.classList.add('visible');
+            dropZone.classList.add('has-file');
+            convertBtn.disabled = false;
+        }
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) handleFile(fileInput.files[0]);
+        });
+
+        removeFile.addEventListener('click', (e) => {
+            e.stopPropagation();
+            reset();
+        });
+
+        convertBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            hideStatus();
+            downloadBtn.style.display = 'none';
+            convertBtn.disabled = true;
+            progressContainer.classList.add('visible');
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Uploading file...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const xhr = new XMLHttpRequest();
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const pct = Math.round((e.loaded / e.total) * 60);
+                        progressBar.style.width = pct + '%';
+                        progressText.textContent = pct < 60 ? 'Uploading file...' : 'Applying theme...';
+                    }
+                });
+
+                const response = await new Promise((resolve, reject) => {
+                    xhr.onload = () => resolve(xhr);
+                    xhr.onerror = () => reject(new Error('Network error'));
+
+                    xhr.open('POST', '/convert');
+                    xhr.responseType = 'blob';
+                    xhr.send(formData);
+
+                    let progress = 60;
+                    const interval = setInterval(() => {
+                        if (progress < 90) {
+                            progress += 5;
+                            progressBar.style.width = progress + '%';
+                            progressText.textContent = 'Applying theme...';
+                        } else {
+                            clearInterval(interval);
+                        }
+                    }, 300);
+
+                    xhr.addEventListener('load', () => clearInterval(interval));
+                });
+
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Complete!';
+
+                if (xhr.status === 200) {
+                    const blob = xhr.response;
+                    downloadUrl = URL.createObjectURL(blob);
+
+                    const disposition = xhr.getResponseHeader('Content-Disposition');
+                    let dlName = 'themed_presentation.pptx';
+                    if (disposition) {
+                        const match = disposition.match(/filename[^;=\n]*=["']?([^"';\n]*)["']?/);
+                        if (match && match[1]) dlName = decodeURIComponent(match[1]);
+                    }
+
+                    downloadBtn.style.display = 'flex';
+                    downloadBtn.onclick = () => {
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = dlName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    };
+
+                    showStatus('Theme applied successfully! Click download to get your file.', 'success');
+                } else {
+                    let errMsg = 'Error processing file.';
+                    try {
+                        const text = await xhr.response.text();
+                        const data = JSON.parse(text);
+                        if (data.error) errMsg = data.error;
+                    } catch (e) {}
+                    showStatus(errMsg, 'error');
+                }
+            } catch (err) {
+                showStatus('Network error. Please try again.', 'error');
+            } finally {
+                convertBtn.disabled = false;
+                setTimeout(() => {
+                    progressContainer.classList.remove('visible');
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
