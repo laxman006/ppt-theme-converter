@@ -3,7 +3,7 @@ import uuid
 import tempfile
 from flask import Flask, request, jsonify, send_file, render_template
 from pptx import Presentation
-from pptx.util import Pt, Emu
+from pptx.util import Pt, Emu, Inches
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from werkzeug.utils import secure_filename
@@ -12,6 +12,11 @@ app = Flask(__name__)
 
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 ALLOWED_EXTENSIONS = {'.ppt', '.pptx'}
+
+LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'logo.png')
+LOGO_HEIGHT = Inches(0.45)
+LOGO_MARGIN_TOP = Inches(0.2)
+LOGO_MARGIN_RIGHT = Inches(0.3)
 
 THEME = {
     'font_family': 'Poppins',
@@ -47,7 +52,7 @@ def is_title_slide(slide):
 def is_title_placeholder(placeholder):
     idx = placeholder.placeholder_format.idx
     ptype = placeholder.placeholder_format.type
-    if ptype is not None and ptype in (1, 15):  # TITLE or CENTER_TITLE
+    if ptype is not None and ptype in (1, 15):
         return True
     if idx in TITLE_PLACEHOLDER_INDICES:
         return True
@@ -60,7 +65,7 @@ def is_title_placeholder(placeholder):
 def is_subtitle_placeholder(placeholder):
     idx = placeholder.placeholder_format.idx
     ptype = placeholder.placeholder_format.type
-    if ptype is not None and ptype == 2:  # SUBTITLE
+    if ptype is not None and ptype == 2:
         return True
     if idx in SUBTITLE_PLACEHOLDER_INDICES:
         return True
@@ -77,11 +82,28 @@ def apply_theme_to_run(run, font_name, font_size, font_color, bold=False):
     run.font.bold = bold
 
 
+def add_logo_to_slide(slide, prs):
+    if not os.path.exists(LOGO_PATH):
+        return
+
+    slide_width = prs.slide_width
+    logo_aspect = 474.0 / 256.0
+    logo_h = LOGO_HEIGHT
+    logo_w = int(logo_h * logo_aspect)
+
+    left = slide_width - logo_w - LOGO_MARGIN_RIGHT
+    top = LOGO_MARGIN_TOP
+
+    slide.shapes.add_picture(LOGO_PATH, left, top, logo_w, logo_h)
+
+
 def apply_theme(input_path, output_path):
     prs = Presentation(input_path)
 
     for slide_idx, slide in enumerate(prs.slides):
         title_slide = is_title_slide(slide)
+
+        add_logo_to_slide(slide, prs)
 
         for shape in slide.shapes:
             if not shape.has_text_frame:
